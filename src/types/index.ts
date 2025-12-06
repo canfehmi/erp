@@ -21,15 +21,14 @@ export interface Supplier {
   id: number
   name: string
   companyName: string
-  phone: string
-  email: string
+  phoneNumber: string
+  contactEmail: string
   address: string
   taxNumber?: string
   taxOffice?: string
-  productCategory: string
-  deliveryTime: number
+  productCategoryId: number
+  productCategory?: ProductCategory
   paymentTerm: number
-  minimumOrderAmount?: number
   bankAccountInfo?: string
   notes?: string
   isActive: boolean
@@ -41,6 +40,7 @@ export type SupplierFormData = Omit<Supplier, 'id' | 'createdAt' | 'updatedAt'>
 
 // Ürün kategorileri
 export interface ProductCategory {
+  toLowerCase(): unknown
   id: number
   name: string
   description?: string

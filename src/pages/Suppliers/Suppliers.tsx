@@ -6,6 +6,7 @@ import supplierService from "../../services/supplierService";
 import type { Supplier } from "../../types";
 import SupplierTable from "./SupplierTable";
 import SupplierModal from "./SupplierModal";
+import productCategoryService from "../../services/productCategoryService";
 
 const Suppliers: React.FC = () => {
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
@@ -16,6 +17,11 @@ const Suppliers: React.FC = () => {
   const { data: suppliers, isLoading } = useQuery({
     queryKey: ["suppliers"],
     queryFn: supplierService.getAll,
+  });
+
+  const { data: categories } = useQuery({
+    queryKey: ["productCategories"],
+    queryFn: productCategoryService.getAll,
   });
 
   const deleteMutation = useMutation({
@@ -55,10 +61,7 @@ const Suppliers: React.FC = () => {
         supplier.companyName
           ?.toLowerCase()
           .includes(searchTerm.toLowerCase()) ||
-        supplier.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        supplier.productCategory
-          ?.toLowerCase()
-          .includes(searchTerm.toLowerCase())
+        supplier.contactEmail?.toLowerCase().includes(searchTerm.toLowerCase())
     ) || [];
 
   return (
@@ -105,6 +108,7 @@ const Suppliers: React.FC = () => {
         open={isModalOpen}
         supplier={editingSupplier}
         onClose={handleModalClose}
+        categories={categories || []}
       />
     </div>
   );

@@ -4,7 +4,6 @@ import {
   DeleteOutlined,
   PhoneOutlined,
   MailOutlined,
-  ClockCircleOutlined,
 } from "@ant-design/icons";
 import type { ColumnsType } from "antd/es/table";
 import type { Supplier } from "../../types";
@@ -39,8 +38,8 @@ const SupplierTable: React.FC<SupplierTableProps> = ({
     },
     {
       title: "Telefon",
-      dataIndex: "phone",
-      key: "phone",
+      dataIndex: "phoneNumber",
+      key: "phoneNumber",
       render: (phone: string) => (
         <Space>
           <PhoneOutlined />
@@ -51,8 +50,8 @@ const SupplierTable: React.FC<SupplierTableProps> = ({
     },
     {
       title: "E-posta",
-      dataIndex: "email",
-      key: "email",
+      dataIndex: "contactEmail",
+      key: "contactEmail",
       render: (email: string) => (
         <Space>
           <MailOutlined />
@@ -65,33 +64,29 @@ const SupplierTable: React.FC<SupplierTableProps> = ({
       title: "Ürün Kategorisi",
       dataIndex: "productCategory",
       key: "productCategory",
-      render: (category: string) => <Tag color="blue">{category}</Tag>,
+      render: (productCategory) => {
+        const categoryName = productCategory?.name || "Belirtilmemiş";
+        return <Tag color="blue">{categoryName}</Tag>;
+      },
       width: 150,
-    },
-    {
-      title: "Teslimat Süresi",
-      dataIndex: "deliveryTime",
-      key: "deliveryTime",
-      render: (time: number) => (
-        <Space>
-          <ClockCircleOutlined />
-          {time} gün
-        </Space>
-      ),
-      width: 130,
-      sorter: (a, b) => a.deliveryTime - b.deliveryTime,
     },
     {
       title: "Ödeme Koşulu",
       dataIndex: "paymentTerm",
       key: "paymentTerm",
-      render: (term: number) => (
-        <Tooltip title="Ödeme vadesi">
-          <Tag color="orange">{term} gün</Tag>
-        </Tooltip>
-      ),
+      render: (term: number) => {
+        // ✅ Null kontrolü
+        if (term === null || term === undefined) {
+          return <span style={{ color: "#999" }}>-</span>;
+        }
+        return (
+          <Tooltip title="Ödeme vadesi">
+            <Tag color="orange">{term} gün</Tag>
+          </Tooltip>
+        );
+      },
       width: 120,
-      sorter: (a, b) => a.paymentTerm - b.paymentTerm,
+      sorter: (a, b) => (a.paymentTerm || 0) - (b.paymentTerm || 0),
     },
     {
       title: "Durum",

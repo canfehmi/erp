@@ -12,6 +12,7 @@ import {
   Card,
   Space,
   Typography,
+  Button,
 } from "antd";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import productService from "../../services/productService";
@@ -195,6 +196,19 @@ const ProductModal: React.FC<ProductModalProps> = ({
                     (option?.children as unknown as string)
                       .toLowerCase()
                       .includes(input.toLowerCase())
+                  }
+                  notFoundContent={
+                    <div style={{ textAlign: "center", padding: 10 }}>
+                      <div style={{ marginBottom: 8 }}>Kategori bulunamadı</div>
+                      <Button
+                        type="link"
+                        onClick={() =>
+                          window.open("/product-categories", "_blank")
+                        }
+                      >
+                        Yeni Kategori Ekle
+                      </Button>
+                    </div>
                   }
                 >
                   {activeCategories.map((category) => (

@@ -8,6 +8,7 @@ import {
   InboxOutlined,
   StockOutlined,
   CalculatorOutlined,
+  AppstoreOutlined,
 } from "@ant-design/icons";
 import type { MenuProps } from "antd";
 
@@ -44,6 +45,11 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
       key: "/products",
       icon: <InboxOutlined />,
       label: "Ürünler",
+    },
+    {
+      key: "/product-categories", // YENİ
+      icon: <AppstoreOutlined />,
+      label: "Kategoriler",
     },
     {
       key: "/stock",

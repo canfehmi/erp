@@ -128,8 +128,8 @@ const ProductTable: React.FC<ProductTableProps> = ({
     },
     {
       title: "Min. Stok",
-      dataIndex: "minStockLevel",
-      key: "minStockLevel",
+      dataIndex: "minimumStockLevel",
+      key: "minimumStockLevel",
       width: 100,
       render: (level: number, record: Product) => `${level} ${record.unit}`,
     },

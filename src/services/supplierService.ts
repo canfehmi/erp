@@ -46,7 +46,6 @@ export const getPaginated = async (page: number, pageSize: number): Promise<Pagi
   return response.data
 }
 
-// Default export
 const supplierService = {
   getAll,
   getById,

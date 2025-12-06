@@ -9,10 +9,11 @@ import {
   Col,
   InputNumber,
   Select,
+  Button,
 } from "antd";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import supplierService from "../../services/supplierService";
-import type { Supplier, SupplierFormData } from "../../types";
+import type { ProductCategory, Supplier, SupplierFormData } from "../../types";
 
 const { Option } = Select;
 
@@ -20,12 +21,14 @@ interface SupplierModalProps {
   open: boolean;
   supplier: Supplier | null;
   onClose: () => void;
+  categories: ProductCategory[];
 }
 
 const SupplierModal: React.FC<SupplierModalProps> = ({
   open,
   supplier,
   onClose,
+  categories,
 }) => {
   const [form] = Form.useForm<SupplierFormData>();
   const queryClient = useQueryClient();
@@ -34,12 +37,29 @@ const SupplierModal: React.FC<SupplierModalProps> = ({
   useEffect(() => {
     if (open) {
       if (supplier) {
-        form.setFieldsValue(supplier);
+        console.log("🔍 Düzenlenen tedarikçi:", supplier); // DEBUG
+
+        // ✅ Tüm alanları manuel olarak doldur
+        form.setFieldsValue({
+          name: supplier.name || "",
+          companyName: supplier.companyName || "",
+          phoneNumber: supplier.phoneNumber || "",
+          contactEmail: supplier.contactEmail || "",
+          address: supplier.address || "",
+          taxNumber: supplier.taxNumber || "", // ✅ Eklendi
+          taxOffice: supplier.taxOffice || "", // ✅ Eklendi
+          productCategoryId: supplier.productCategoryId,
+          paymentTerm: supplier.paymentTerm || 30, // ✅ Eklendi
+          bankAccountInfo: supplier.bankAccountInfo || "", // ✅ Eklendi
+          notes: supplier.notes || "", // ✅ Eklendi
+          isActive: supplier.isActive,
+        });
+
+        console.log("📝 Form'a yüklenen değerler:", form.getFieldsValue()); // DEBUG
       } else {
         form.resetFields();
         form.setFieldsValue({
           isActive: true,
-          deliveryTime: 7,
           paymentTerm: 30,
         });
       }
@@ -48,6 +68,7 @@ const SupplierModal: React.FC<SupplierModalProps> = ({
 
   const saveMutation = useMutation({
     mutationFn: (data: SupplierFormData) => {
+      console.log("📤 Gönderilen veri:", data); // DEBUG
       if (isEditing) {
         return supplierService.update(supplier.id, data);
       }
@@ -61,16 +82,29 @@ const SupplierModal: React.FC<SupplierModalProps> = ({
       onClose();
       form.resetFields();
     },
-    onError: () => {
-      message.error("Bir hata oluştu");
+    onError: (error: any) => {
+      console.error("❌ Hata detayı:", error);
+      const errorMessage =
+        error?.response?.data?.message ||
+        error?.response?.data ||
+        error?.message ||
+        "Bir hata oluştu";
+      message.error(
+        typeof errorMessage === "string"
+          ? errorMessage
+          : JSON.stringify(errorMessage)
+      );
     },
   });
 
   const handleSubmit = (): void => {
     form.validateFields().then((values) => {
+      console.log("📝 Form değerleri:", values); // DEBUG
       saveMutation.mutate(values);
     });
   };
+
+  const activeCategories = categories.filter((cat) => cat.isActive);
 
   return (
     <Modal
@@ -88,7 +122,6 @@ const SupplierModal: React.FC<SupplierModalProps> = ({
         layout="vertical"
         initialValues={{
           isActive: true,
-          deliveryTime: 7,
           paymentTerm: 30,
         }}
       >
@@ -119,7 +152,7 @@ const SupplierModal: React.FC<SupplierModalProps> = ({
         <Row gutter={16}>
           <Col span={12}>
             <Form.Item
-              name="phone"
+              name="phoneNumber"
               label="Telefon"
               rules={[
                 { required: true, message: "Telefon numarası zorunludur" },
@@ -134,7 +167,7 @@ const SupplierModal: React.FC<SupplierModalProps> = ({
           </Col>
           <Col span={12}>
             <Form.Item
-              name="email"
+              name="contactEmail"
               label="E-posta"
               rules={[
                 { required: true, message: "E-posta adresi zorunludur" },
@@ -170,45 +203,41 @@ const SupplierModal: React.FC<SupplierModalProps> = ({
         <Row gutter={16}>
           <Col span={12}>
             <Form.Item
-              name="productCategory"
-              label="Ürün Kategorisi"
-              rules={[{ required: true, message: "Ürün kategorisi seçiniz" }]}
+              name="productCategoryId"
+              label="Kategori"
+              rules={[{ required: true, message: "Kategori seçiniz" }]}
             >
-              <Select placeholder="Kategori seçiniz">
-                <Option value="Kameralar">Kameralar</Option>
-                <Option value="Kayıt Cihazları">
-                  Kayıt Cihazları (DVR/NVR)
-                </Option>
-                <Option value="Kablolar ve Aksesuarlar">
-                  Kablolar ve Aksesuarlar
-                </Option>
-                <Option value="Güç Kaynakları">Güç Kaynakları</Option>
-                <Option value="Monitörler">Monitörler</Option>
-                <Option value="Harddiskler">Harddiskler</Option>
-                <Option value="Network Switchler">Network Switchler</Option>
-                <Option value="Diğer">Diğer</Option>
+              <Select
+                placeholder="Kategori seçiniz"
+                showSearch
+                optionFilterProp="children"
+                filterOption={(input, option) =>
+                  (option?.children as unknown as string)
+                    .toLowerCase()
+                    .includes(input.toLowerCase())
+                }
+                notFoundContent={
+                  <div style={{ textAlign: "center", padding: 10 }}>
+                    <div style={{ marginBottom: 8 }}>Kategori bulunamadı</div>
+                    <Button
+                      type="link"
+                      onClick={() =>
+                        window.open("/product-categories", "_blank")
+                      }
+                    >
+                      Yeni Kategori Ekle
+                    </Button>
+                  </div>
+                }
+              >
+                {activeCategories.map((category) => (
+                  <Option key={category.id} value={category.id}>
+                    {category.name}
+                  </Option>
+                ))}
               </Select>
             </Form.Item>
           </Col>
-          <Col span={12}>
-            <Form.Item
-              name="deliveryTime"
-              label="Teslimat Süresi (Gün)"
-              rules={[
-                { required: true, message: "Teslimat süresi zorunludur" },
-              ]}
-            >
-              <InputNumber
-                min={0}
-                max={365}
-                style={{ width: "100%" }}
-                placeholder="7"
-              />
-            </Form.Item>
-          </Col>
-        </Row>
-
-        <Row gutter={16}>
           <Col span={12}>
             <Form.Item
               name="paymentTerm"
@@ -220,21 +249,6 @@ const SupplierModal: React.FC<SupplierModalProps> = ({
                 max={365}
                 style={{ width: "100%" }}
                 placeholder="30"
-              />
-            </Form.Item>
-          </Col>
-          <Col span={12}>
-            <Form.Item
-              name="minimumOrderAmount"
-              label="Minimum Sipariş Tutarı (₺)"
-            >
-              <InputNumber
-                min={0}
-                style={{ width: "100%" }}
-                placeholder="0"
-                formatter={(value) =>
-                  `₺ ${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ",")
-                }
               />
             </Form.Item>
           </Col>

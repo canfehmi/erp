@@ -44,7 +44,7 @@ const productCategoryService = {
   getById,
   create,
   update,
-  delete: deleteCategory,
+  deleteCategory,
   getActive
 }
 
