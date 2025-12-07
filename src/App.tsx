@@ -6,7 +6,7 @@ import Suppliers from "./pages/Suppliers/Suppliers";
 import Products from "./pages/Products/Products";
 import Stock from "./pages/Stock/Stock";
 import Costs from "./pages/Costs/Costs";
-import ProductCategories from "./pages/ProductCategories/productCategories";
+import ProductCategories from "./pages/ProductCategories/ProductCategories";
 
 function App() {
   return (

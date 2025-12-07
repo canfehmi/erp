@@ -48,8 +48,9 @@ const Dashboard: React.FC = () => {
 
   // Düşük stoklu ürünler
   const lowStockProducts: Product[] =
-    products?.filter((p) => p.stockQuantity <= p.minStockLevel && p.isActive) ||
-    [];
+    products?.filter(
+      (p) => p.stockQuantity <= p.minimumStockLevel && p.isActive
+    ) || [];
 
   // Düşük stoklu ürünler tablosu
   const lowStockColumns: ColumnsType<Product> = [
@@ -70,7 +71,7 @@ const Dashboard: React.FC = () => {
       key: "stockQuantity",
       render: (qty: number, record: Product) => (
         <span style={{ color: "#faad14" }}>
-          {qty} / {record.minStockLevel} {record.unit}
+          {qty} / {record.minimumStockLevel} {record.unit}
         </span>
       ),
     },

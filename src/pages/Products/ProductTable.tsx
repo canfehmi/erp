@@ -110,7 +110,7 @@ const ProductTable: React.FC<ProductTableProps> = ({
       key: "stockQuantity",
       width: 100,
       render: (quantity: number, record: Product) => {
-        const isLowStock = quantity <= record.minStockLevel;
+        const isLowStock = quantity <= record.minimumStockLevel;
         return (
           <Space>
             {isLowStock && (
@@ -196,7 +196,7 @@ const ProductTable: React.FC<ProductTableProps> = ({
       }}
       scroll={{ x: 1600 }}
       rowClassName={(record) =>
-        record.stockQuantity <= record.minStockLevel ? "low-stock-row" : ""
+        record.stockQuantity <= record.minimumStockLevel ? "low-stock-row" : ""
       }
     />
   );

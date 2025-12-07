@@ -67,7 +67,7 @@ export interface Product {
   salePrice: number
   profitMargin: number
   stockQuantity: number
-  minStockLevel: number
+  minimumStockLevel: number
   unit: string
   imageUrl?: string
   isActive: boolean
@@ -76,6 +76,47 @@ export interface Product {
 }
 
 export type ProductFormData = Omit<Product, 'id' | 'profitMargin' | 'createdAt' | 'updatedAt' | 'supplier'>
+
+// Stok Hareket Tipi
+export type StockMovementType =
+  | 1   // STOCK_IN
+  | 2   // STOCK_OUT
+  | 3   // ADJUSTMENT
+  | 4   // RETURN
+  | 5;  // TRANSFER
+
+  export const StockMovementTypeMap = {
+  STOCK_IN: 1,
+  STOCK_OUT: 2,
+  ADJUSTMENT: 3,
+  RETURN: 4,
+  TRANSFER: 5
+} as const;
+
+export interface StockMovement {
+  id: number
+  productId: number
+  product?: Product
+  type: StockMovementType
+  quantity: number
+  previousStock: number
+  newStock: number
+  referenceNumber?: string
+  notes?: string
+  movementDate: string
+  createdBy?: string
+}
+
+export type StockMovementFormData = Omit<StockMovement, 'id' | 'product' | 'previousStock' | 'newStock' | 'createdBy'>
+
+// Stok İstatistikleri
+export interface StockStatistics {
+  totalMovements: number
+  totalStockIn: number
+  totalStockOut: number
+  totalAdjustments: number
+  totalReturns: number
+}
 
 // API yanıt tipleri
 export interface ApiResponse<T> {

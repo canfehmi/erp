@@ -8,8 +8,8 @@ import {
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import productCategoryService from "../../services/productCategoryService";
 import type { ProductCategory } from "../../types";
-import ProductCategoryTable from "./productCategoryTable";
-import ProductCategoryModal from "./productCategoryModal";
+import ProductCategoryTable from "./ProductCategoryTable";
+import ProductCategoryModal from "./ProductCategoryModal";
 
 const ProductCategories: React.FC = () => {
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);

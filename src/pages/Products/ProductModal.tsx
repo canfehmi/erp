@@ -76,7 +76,7 @@ const ProductModal: React.FC<ProductModalProps> = ({
         form.setFieldsValue({
           isActive: true,
           stockQuantity: 0,
-          minStockLevel: 10,
+          minimumStockLevel: 10,
           unit: "Adet",
         });
         setPurchasePrice(0);
@@ -101,7 +101,16 @@ const ProductModal: React.FC<ProductModalProps> = ({
       form.resetFields();
     },
     onError: (error: any) => {
-      message.error(error?.response?.data?.message || "Bir hata oluştu");
+      const errorMessage =
+        error?.response?.data?.message ||
+        error?.response?.data ||
+        "Bir hata oluştu";
+
+      if (typeof errorMessage === "string") {
+        message.error(errorMessage, 5);
+      } else {
+        message.error("Bir hata oluştu");
+      }
     },
   });
 
@@ -157,7 +166,9 @@ const ProductModal: React.FC<ProductModalProps> = ({
                 rules={[
                   { required: true, message: "Ürün kodu zorunludur" },
                   { min: 2, message: "En az 2 karakter olmalıdır" },
+                  { max: 50, message: "En fazla 50 karakter olabilir" },
                 ]}
+                tooltip="Ürün kodu benzersiz olmalıdır"
               >
                 <Input placeholder="CAM-001" />
               </Form.Item>
@@ -169,7 +180,9 @@ const ProductModal: React.FC<ProductModalProps> = ({
                 rules={[
                   { required: true, message: "Ürün adı zorunludur" },
                   { min: 2, message: "En az 2 karakter olmalıdır" },
+                  { max: 200, message: "En fazla 200 karakter olabilir" },
                 ]}
+                tooltip="Ürün adı benzersiz olmalıdır"
               >
                 <Input placeholder="Güvenlik Kamerası 5MP" />
               </Form.Item>

@@ -103,8 +103,9 @@ const Products: React.FC = () => {
 
   // Düşük stoklu ürün sayısı
   const lowStockCount =
-    products?.filter((p) => p.stockQuantity <= p.minStockLevel && p.isActive)
-      .length || 0;
+    products?.filter(
+      (p) => p.stockQuantity <= p.minimumStockLevel && p.isActive
+    ).length || 0;
 
   if (isError) {
     return (
