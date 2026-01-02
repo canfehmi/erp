@@ -23,17 +23,25 @@ export const update = async (id: number, data: ProductFormData): Promise<Product
   return response.data
 }
 
-export const deleteProduct = async (id: number): Promise<void> => {
+export const remove = async (id: number): Promise<void> => {
   await api.delete(`${endpoint}/${id}`)
 }
 
+// Düşük stoklu ürünleri getir
 export const getLowStock = async (): Promise<Product[]> => {
   const response = await api.get<Product[]>(`${endpoint}/low-stock`)
   return response.data
 }
 
+// Kategoriye göre ürünleri getir
 export const getByCategory = async (categoryId: number): Promise<Product[]> => {
   const response = await api.get<Product[]>(`${endpoint}/category/${categoryId}`)
+  return response.data
+}
+
+// Tedarikçiye göre ürünleri getir
+export const getBySupplier = async (supplierId: number): Promise<Product[]> => {
+  const response = await api.get<Product[]>(`${endpoint}/supplier/${supplierId}`)
   return response.data
 }
 
@@ -42,10 +50,10 @@ const productService = {
   getById,
   create,
   update,
-  delete: deleteProduct,
-  deleteProduct,
+  remove,
   getLowStock,
-  getByCategory
+  getByCategory,
+  getBySupplier
 }
 
 export default productService

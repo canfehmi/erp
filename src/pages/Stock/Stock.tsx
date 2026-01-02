@@ -10,6 +10,8 @@ import {
   Select,
   Space,
   Tabs,
+  Dropdown,
+  type MenuProps,
 } from "antd";
 import {
   PlusOutlined,
@@ -17,13 +19,20 @@ import {
   ArrowDownOutlined,
   SwapOutlined,
   WarningOutlined,
+  DownloadOutlined,
+  UploadOutlined,
+  FileExcelOutlined,
+  BarChartOutlined,
 } from "@ant-design/icons";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import stockMovementService from "../../services/stockMovementService";
 import productService from "../../services/productService";
+import excelService from "../../services/excelService";
 import StockMovementTable from "./StockMovementTable";
 import StockMovementModal from "./StockMovementModal";
 import LowStockAlert from "./LowStockAlert";
+import BulkStockMovementModal from "./BulkStockMovementModal";
+import StockReports from "./StockReports";
 import type { StockMovement, Product } from "../../types";
 import { StockMovementTypeMap } from "../../types";
 import { Dayjs } from "dayjs";
@@ -33,6 +42,7 @@ const { Option } = Select;
 
 const Stock: React.FC = () => {
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
+  const [isBulkModalOpen, setIsBulkModalOpen] = useState<boolean>(false);
   const [selectedProduct, setSelectedProduct] = useState<number | undefined>();
   const [selectedType, setSelectedType] = useState<number | undefined>();
   const [dateRange, setDateRange] = useState<[Dayjs, Dayjs] | null>(null);
@@ -54,13 +64,24 @@ const Stock: React.FC = () => {
       dateRange?.[0]?.format("YYYY-MM-DD"),
       dateRange?.[1]?.format("YYYY-MM-DD"),
     ],
-    queryFn: () =>
-      stockMovementService.getAll({
-        productId: selectedProduct,
-        type: selectedType,
-        startDate: dateRange?.[0]?.format("YYYY-MM-DD"),
-        endDate: dateRange?.[1]?.format("YYYY-MM-DD"),
-      }),
+    queryFn: () => {
+      const params: any = {};
+
+      if (selectedProduct) {
+        params.productId = selectedProduct;
+      }
+
+      if (selectedType) {
+        params.type = selectedType;
+      }
+
+      if (dateRange && dateRange[0] && dateRange[1]) {
+        params.startDate = dateRange[0].format("YYYY-MM-DD");
+        params.endDate = dateRange[1].format("YYYY-MM-DD");
+      }
+
+      return stockMovementService.getAll(params);
+    },
   });
 
   // İstatistikleri çek
@@ -70,11 +91,16 @@ const Stock: React.FC = () => {
       dateRange?.[0]?.format("YYYY-MM-DD"),
       dateRange?.[1]?.format("YYYY-MM-DD"),
     ],
-    queryFn: () =>
-      stockMovementService.getStatistics({
-        startDate: dateRange?.[0]?.format("YYYY-MM-DD"),
-        endDate: dateRange?.[1]?.format("YYYY-MM-DD"),
-      }),
+    queryFn: () => {
+      const params: any = {};
+
+      if (dateRange && dateRange[0] && dateRange[1]) {
+        params.startDate = dateRange[0].format("YYYY-MM-DD");
+        params.endDate = dateRange[1].format("YYYY-MM-DD");
+      }
+
+      return stockMovementService.getStatistics(params);
+    },
   });
 
   // Düşük stoklu ürünleri çek
@@ -101,6 +127,10 @@ const Stock: React.FC = () => {
     setIsModalOpen(true);
   };
 
+  const handleBulkAdd = (): void => {
+    setIsBulkModalOpen(true);
+  };
+
   const handleDelete = (id: number): void => {
     deleteMutation.mutate(id);
   };
@@ -109,11 +139,63 @@ const Stock: React.FC = () => {
     setIsModalOpen(false);
   };
 
+  const handleBulkModalClose = (): void => {
+    setIsBulkModalOpen(false);
+  };
+
   const handleFilterReset = (): void => {
     setSelectedProduct(undefined);
     setSelectedType(undefined);
     setDateRange(null);
   };
+
+  const handleExportExcel = (): void => {
+    if (movements && movements.length > 0) {
+      excelService.exportStockMovementsToExcel(movements);
+      message.success("Excel dosyası indirildi");
+    } else {
+      message.warning("Dışa aktarılacak veri bulunamadı");
+    }
+  };
+
+  const handleExportProducts = (): void => {
+    if (products && products.length > 0) {
+      excelService.exportProductsToExcel(products);
+      message.success("Ürünler Excel dosyası indirildi");
+    } else {
+      message.warning("Dışa aktarılacak ürün bulunamadı");
+    }
+  };
+
+  const menuItems: MenuProps["items"] = [
+    {
+      key: "single",
+      label: "Tekli Hareket Ekle",
+      icon: <PlusOutlined />,
+      onClick: handleAdd,
+    },
+    {
+      key: "bulk",
+      label: "Toplu Hareket Ekle",
+      icon: <UploadOutlined />,
+      onClick: handleBulkAdd,
+    },
+    {
+      type: "divider",
+    },
+    {
+      key: "export-movements",
+      label: "Hareketleri Dışa Aktar",
+      icon: <DownloadOutlined />,
+      onClick: handleExportExcel,
+    },
+    {
+      key: "export-products",
+      label: "Ürünleri Dışa Aktar",
+      icon: <FileExcelOutlined />,
+      onClick: handleExportProducts,
+    },
+  ];
 
   return (
     <div>
@@ -129,14 +211,11 @@ const Stock: React.FC = () => {
         }}
       >
         <h1 style={{ margin: 0 }}>Stok Takibi</h1>
-        <Button
-          type="primary"
-          icon={<PlusOutlined />}
-          onClick={handleAdd}
-          size="large"
-        >
-          Stok Hareketi Ekle
-        </Button>
+        <Dropdown menu={{ items: menuItems }} placement="bottomRight">
+          <Button type="primary" size="large">
+            İşlemler <PlusOutlined />
+          </Button>
+        </Dropdown>
       </div>
 
       {/* İstatistikler */}
@@ -193,7 +272,11 @@ const Stock: React.FC = () => {
         items={[
           {
             key: "movements",
-            label: "Stok Hareketleri",
+            label: (
+              <span>
+                <SwapOutlined /> Stok Hareketleri
+              </span>
+            ),
             children: (
               <>
                 {/* Filtreler */}
@@ -270,15 +353,32 @@ const Stock: React.FC = () => {
             ),
             children: <LowStockAlert products={lowStockProducts || []} />,
           },
+          {
+            key: "reports",
+            label: (
+              <span>
+                <BarChartOutlined /> Raporlar & Grafikler
+              </span>
+            ),
+            children: <StockReports />,
+          },
         ]}
       />
 
-      {/* Modal */}
+      {/* Modals */}
       {isModalOpen && (
         <StockMovementModal
           open={isModalOpen}
           products={products || []}
           onClose={handleModalClose}
+        />
+      )}
+
+      {isBulkModalOpen && (
+        <BulkStockMovementModal
+          open={isBulkModalOpen}
+          products={products || []}
+          onClose={handleBulkModalClose}
         />
       )}
     </div>

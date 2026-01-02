@@ -3,7 +3,7 @@ import { Button, message, Input } from "antd";
 import { PlusOutlined, SearchOutlined } from "@ant-design/icons";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import customerService from "../../services/customerService";
-import CustomerTable from "./CustomerTable";
+import CustomerTableWithReceivables from "./CustomerTableWithReceivables";
 import CustomerModal from "./CustomerModal";
 import type { Customer } from "../../types";
 
@@ -30,6 +30,7 @@ const Customers: React.FC = () => {
     onSuccess: () => {
       message.success("Müşteri başarıyla silindi");
       queryClient.invalidateQueries({ queryKey: ["customers"] });
+      queryClient.invalidateQueries({ queryKey: ["customerReceivables"] });
     },
     onError: () => {
       message.error("Müşteri silinirken hata oluştu");
@@ -91,7 +92,7 @@ const Customers: React.FC = () => {
           gap: 12,
         }}
       >
-        <h1 style={{ margin: 0 }}>Müşteri Yönetimi</h1>
+        <h1 style={{ margin: 0 }}>Müşteri Yönetimi & Alacaklar</h1>
         <div style={{ display: "flex", gap: 12 }}>
           <Input
             placeholder="Müşteri ara..."
@@ -112,7 +113,7 @@ const Customers: React.FC = () => {
         </div>
       </div>
 
-      <CustomerTable
+      <CustomerTableWithReceivables
         customers={filteredCustomers}
         loading={isLoading}
         onEdit={handleEdit}

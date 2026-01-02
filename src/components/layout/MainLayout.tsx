@@ -57,6 +57,11 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
       label: "Stok Takibi",
     },
     {
+      key: "/jobs",
+      icon: <StockOutlined />,
+      label: "İş Takibi",
+    },
+    {
       key: "/costs",
       icon: <CalculatorOutlined />,
       label: "Maliyet Hesaplama",

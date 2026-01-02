@@ -3,6 +3,17 @@ import api from './api'
 
 const endpoint = '/stockmovement'
 
+// ✅ Yardımcı fonksiyon: undefined parametreleri temizle
+const cleanParams = (params: Record<string, any>): Record<string, any> => {
+  const cleaned: Record<string, any> = {};
+  Object.keys(params).forEach(key => {
+    if (params[key] !== undefined && params[key] !== null && params[key] !== '') {
+      cleaned[key] = params[key];
+    }
+  });
+  return cleaned;
+};
+
 export const getAll = async (params?: {
   productId?: number
   startDate?: string
@@ -10,11 +21,27 @@ export const getAll = async (params?: {
   type?: number
 }): Promise<StockMovement[]> => {
   try {
-    const response = await api.get<StockMovement[]>(endpoint, { params })
-    return response.data
+    // ✅ Undefined parametreleri temizle
+    const cleanedParams = params ? cleanParams(params) : {};
+    
+    console.log('📤 Stock Movement API Request:', {
+      endpoint,
+      params: cleanedParams
+    });
+    
+    const response = await api.get<StockMovement[]>(endpoint, { 
+      params: cleanedParams 
+    });
+    
+    console.log('📥 Stock Movement API Response:', {
+      count: response.data.length,
+      data: response.data
+    });
+    
+    return response.data;
   } catch (error) {
-    console.error('❌ getAll hatası:', error)
-    throw error
+    console.error('❌ getAll hatası:', error);
+    throw error;
   }
 }
 
@@ -37,8 +64,21 @@ export const getStatistics = async (params?: {
   startDate?: string
   endDate?: string
 }): Promise<StockStatistics> => {
-  const response = await api.get<StockStatistics>(`${endpoint}/statistics`, { params })
-  return response.data
+  // ✅ Undefined parametreleri temizle
+  const cleanedParams = params ? cleanParams(params) : {};
+  
+  console.log('📤 Statistics API Request:', {
+    endpoint: `${endpoint}/statistics`,
+    params: cleanedParams
+  });
+  
+  const response = await api.get<StockStatistics>(`${endpoint}/statistics`, { 
+    params: cleanedParams 
+  });
+  
+  console.log('📥 Statistics API Response:', response.data);
+  
+  return response.data;
 }
 
 const stockMovementService = {

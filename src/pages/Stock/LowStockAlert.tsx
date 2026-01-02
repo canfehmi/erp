@@ -1,8 +1,10 @@
 import { Table, Tag, Space, Button } from "antd";
 import { WarningOutlined, PlusOutlined } from "@ant-design/icons";
 import type { ColumnsType } from "antd/es/table";
-import type { Product } from "../../types";
+import type { Product, ProductCategory } from "../../types";
 import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import productCategoryService from "../../services/productCategoryService";
 import StockMovementModal from "./StockMovementModal";
 
 interface LowStockAlertProps {
@@ -15,6 +17,12 @@ const LowStockAlert: React.FC<LowStockAlertProps> = ({ products }) => {
     number | undefined
   >();
 
+  // ✅ Kategorileri çek
+  const { data: categories = [] } = useQuery<ProductCategory[]>({
+    queryKey: ["productCategories"],
+    queryFn: productCategoryService.getAll,
+  });
+
   const handleStockAdd = (productId: number): void => {
     setSelectedProductId(productId);
     setIsModalOpen(true);
@@ -23,6 +31,18 @@ const LowStockAlert: React.FC<LowStockAlertProps> = ({ products }) => {
   const handleModalClose = (): void => {
     setIsModalOpen(false);
     setSelectedProductId(undefined);
+  };
+
+  // ✅ Kategori adını getir - helper fonksiyon
+  const getCategoryName = (product: Product): string => {
+    if (product.category?.name) {
+      return product.category.name;
+    }
+    if (product.categoryId && categories.length > 0) {
+      const category = categories.find((c) => c.id === product.categoryId);
+      if (category) return category.name;
+    }
+    return "Belirtilmemiş";
   };
 
   const columns: ColumnsType<Product> = [
@@ -41,11 +61,10 @@ const LowStockAlert: React.FC<LowStockAlertProps> = ({ products }) => {
     },
     {
       title: "Kategori",
-      dataIndex: ["category", "name"],
       key: "category",
       width: 150,
-      render: (categoryName: string) => (
-        <Tag color="blue">{categoryName || "Belirtilmemiş"}</Tag>
+      render: (_, record: Product) => (
+        <Tag color="blue">{getCategoryName(record)}</Tag>
       ),
     },
     {
@@ -77,7 +96,6 @@ const LowStockAlert: React.FC<LowStockAlertProps> = ({ products }) => {
       width: 120,
       align: "right",
       render: (_: unknown, record: Product) => {
-        // ✅ Null/undefined kontrolü eklendi
         const minStock = record.minimumStockLevel || 0;
         const currentStock = record.stockQuantity || 0;
         const shortage = minStock - currentStock;
@@ -112,7 +130,7 @@ const LowStockAlert: React.FC<LowStockAlertProps> = ({ products }) => {
           type="primary"
           size="small"
           icon={<PlusOutlined />}
-          onClick={() => handleStockAdd(record.id)} // ✅ Fonksiyon düzeltildi
+          onClick={() => handleStockAdd(record.id)}
         >
           Stok Ekle
         </Button>
@@ -151,7 +169,7 @@ const LowStockAlert: React.FC<LowStockAlertProps> = ({ products }) => {
               open={isModalOpen}
               products={products}
               onClose={handleModalClose}
-              preSelectedProductId={selectedProductId} // ✅ Seçili ürünü modal'a gönder
+              preSelectedProductId={selectedProductId}
             />
           )}
         </>

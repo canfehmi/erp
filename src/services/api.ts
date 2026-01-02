@@ -3,7 +3,7 @@ import { message } from 'antd'
 import type { ApiError } from '../types'
 
 const api: AxiosInstance = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || 'https://localhost:7055/api',
+  baseURL: import.meta.env.VITE_API_URL || 'http://localhost:5222/api',
   headers: {
     'Content-Type': 'application/json',
   },

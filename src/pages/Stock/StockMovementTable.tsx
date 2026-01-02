@@ -1,8 +1,14 @@
 import { Table, Tag, Tooltip } from "antd";
 import { ArrowUpOutlined, ArrowDownOutlined } from "@ant-design/icons";
 import type { ColumnsType } from "antd/es/table";
-import type { StockMovement, StockMovementType } from "../../types";
-import { StockMovementTypeMap } from "../../types"; // ✅ DÜZELTİLDİ
+import type {
+  StockMovement,
+  StockMovementType,
+  ProductCategory,
+} from "../../types";
+import { StockMovementTypeMap } from "../../types";
+import { useQuery } from "@tanstack/react-query";
+import productCategoryService from "../../services/productCategoryService";
 import dayjs from "dayjs";
 
 interface StockMovementTableProps {
@@ -15,6 +21,26 @@ const StockMovementTable: React.FC<StockMovementTableProps> = ({
   movements,
   loading,
 }) => {
+  // ✅ Kategorileri çek
+  const { data: categories = [] } = useQuery<ProductCategory[]>({
+    queryKey: ["productCategories"],
+    queryFn: productCategoryService.getAll,
+  });
+
+  // ✅ Kategori adını getir
+  const getCategoryName = (movement: StockMovement): string => {
+    if (movement.product?.category?.name) {
+      return movement.product.category.name;
+    }
+    if (movement.product?.categoryId && categories.length > 0) {
+      const category = categories.find(
+        (c) => c.id === movement.product?.categoryId
+      );
+      if (category) return category.name;
+    }
+    return "-";
+  };
+
   const getMovementTypeTag = (type: StockMovementType) => {
     switch (type) {
       case StockMovementTypeMap.STOCK_IN:
@@ -63,6 +89,19 @@ const StockMovementTable: React.FC<StockMovementTableProps> = ({
       dataIndex: ["product", "code"],
       key: "productCode",
       width: 120,
+    },
+    {
+      title: "Kategori",
+      key: "category",
+      width: 120,
+      render: (_, record: StockMovement) => {
+        const categoryName = getCategoryName(record);
+        return categoryName !== "-" ? (
+          <Tag color="blue">{categoryName}</Tag>
+        ) : (
+          "-"
+        );
+      },
     },
     {
       title: "İşlem Tipi",
@@ -158,7 +197,7 @@ const StockMovementTable: React.FC<StockMovementTableProps> = ({
         pageSizeOptions: ["10", "20", "50", "100"],
         showTotal: (total: number) => `Toplam ${total} hareket`,
       }}
-      scroll={{ x: 1400 }}
+      scroll={{ x: 1500 }}
     />
   );
 };

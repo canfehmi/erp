@@ -1,18 +1,11 @@
 import type { ProductCategory, ProductCategoryFormData } from '../types'
 import api from './api'
 
-const endpoint = '/productcategory' // Backend route'unuz ne?
+const endpoint = '/productcategory'
 
 export const getAll = async (): Promise<ProductCategory[]> => {
-  try {
-    console.log('🔵 Category API isteği:', `${api.defaults.baseURL}${endpoint}`)
-    const response = await api.get<ProductCategory[]>(endpoint)
-    console.log('✅ Category API yanıtı:', response.data)
-    return response.data
-  } catch (error) {
-    console.error('❌ Category API hatası:', error)
-    throw error
-  }
+  const response = await api.get<ProductCategory[]>(endpoint)
+  return response.data
 }
 
 export const getById = async (id: number): Promise<ProductCategory> => {
@@ -30,10 +23,11 @@ export const update = async (id: number, data: ProductCategoryFormData): Promise
   return response.data
 }
 
-export const deleteCategory = async (id: number): Promise<void> => {
+export const remove = async (id: number): Promise<void> => {
   await api.delete(`${endpoint}/${id}`)
 }
 
+// Aktif kategorileri getir
 export const getActive = async (): Promise<ProductCategory[]> => {
   const response = await api.get<ProductCategory[]>(`${endpoint}/active`)
   return response.data
@@ -44,7 +38,7 @@ const productCategoryService = {
   getById,
   create,
   update,
-  deleteCategory,
+  remove,
   getActive
 }
 

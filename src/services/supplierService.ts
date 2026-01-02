@@ -1,16 +1,11 @@
-import type { Supplier, SupplierFormData, PaginatedResponse } from '../types'
+import type { Supplier, SupplierFormData } from '../types'
 import api from './api'
 
 const endpoint = '/supplier'
 
 export const getAll = async (): Promise<Supplier[]> => {
-  try {
-    const response = await api.get<Supplier[]>(endpoint)
-    return response.data
-  } catch (error) {
-    console.error('❌ getAll hatası:', error)
-    throw error
-  }
+  const response = await api.get<Supplier[]>(endpoint)
+  return response.data
 }
 
 export const getById = async (id: number): Promise<Supplier> => {
@@ -28,20 +23,26 @@ export const update = async (id: number, data: SupplierFormData): Promise<Suppli
   return response.data
 }
 
-export const deleteSupplier = async (id: number): Promise<void> => {
+export const remove = async (id: number): Promise<void> => {
   await api.delete(`${endpoint}/${id}`)
 }
 
-export const search = async (searchTerm: string): Promise<Supplier[]> => {
-  const response = await api.get<Supplier[]>(`${endpoint}/search`, {
-    params: { term: searchTerm }
-  })
+// Aktif tedarikçileri getir
+export const getActive = async (): Promise<Supplier[]> => {
+  const response = await api.get<Supplier[]>(`${endpoint}/active`)
   return response.data
 }
 
-export const getPaginated = async (page: number, pageSize: number): Promise<PaginatedResponse<Supplier>> => {
-  const response = await api.get<PaginatedResponse<Supplier>>(endpoint, {
-    params: { page, pageSize }
+// Kategoriye göre tedarikçileri getir
+export const getByCategory = async (categoryId: number): Promise<Supplier[]> => {
+  const response = await api.get<Supplier[]>(`${endpoint}/category/${categoryId}`)
+  return response.data
+}
+
+// Tedarikçi ara
+export const search = async (query: string): Promise<Supplier[]> => {
+  const response = await api.get<Supplier[]>(`${endpoint}/search`, {
+    params: { q: query }
   })
   return response.data
 }
@@ -51,9 +52,10 @@ const supplierService = {
   getById,
   create,
   update,
-  delete: deleteSupplier,
-  search,
-  getPaginated
+  remove,
+  getActive,
+  getByCategory,
+  search
 }
 
 export default supplierService
